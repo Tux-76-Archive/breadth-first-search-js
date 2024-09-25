@@ -82,9 +82,16 @@ var sketchProc = function(processingInstance) { with (processingInstance) {
 	//start pathfinding
 	startNode = grid[0][0];
 	endNode = grid[29][29];
+    function drawStartAndEndNodes() {
+        fill(0, 255, 0);
+        ellipse(startNode.x * squareSize + squareSize / 2, startNode.y * squareSize + squareSize / 2, squareSize / 2, squareSize / 2);
+        fill(255, 0, 0);
+        ellipse(endNode.x * squareSize + squareSize / 2, endNode.y * squareSize + squareSize / 2, squareSize / 2, squareSize / 2);
+    }
+	drawStartAndEndNodes();
 	let timed = true;
 	let ran = false;
-	
+
 	document.getElementById("run").addEventListener("click", function () {
 		let queue = [startNode];
 		//create adjacent list
@@ -173,12 +180,10 @@ var sketchProc = function(processingInstance) { with (processingInstance) {
 			}
 		}
 	});
-	fill(0, 255, 0);
-	ellipse(startNode.x * squareSize + squareSize / 2, startNode.y * squareSize + squareSize / 2, squareSize / 2, squareSize / 2);
-	fill(255, 0, 0);
-	ellipse(endNode.x * squareSize + squareSize / 2, endNode.y * squareSize + squareSize / 2, squareSize / 2, squareSize / 2);
 	let currType = 1;
-	document.getElementById("mycanvas").addEventListener("click", function () {
+    let mouseDown = false;
+    let placedBlock = true;
+	document.getElementById("mycanvas").addEventListener("mousedown", function () {
 		if (ran === false) {
 			let clickedSquare = grid[Math.floor(mouseX / squareSize)][Math.floor(mouseY / squareSize)];
 			if (clickedSquare === startNode) {
@@ -193,10 +198,13 @@ var sketchProc = function(processingInstance) { with (processingInstance) {
 				console.log("moving end node");
 			} else {
 				if (currType === 1) {
+                    mouseDown = true;
 					if (clickedSquare.blocked) {
 						clickedSquare.blocked = false;
+                        placedBlock = false;
 					} else {
 						clickedSquare.blocked = true;
+                        placedBlock = true;
 					}
 				} else if (currType === 2) {
 					startNode = clickedSquare;
@@ -213,7 +221,50 @@ var sketchProc = function(processingInstance) { with (processingInstance) {
 			ellipse(endNode.x * squareSize + squareSize / 2, endNode.y * squareSize + squareSize / 2, squareSize / 2, squareSize / 2);
 		}
 		
-	})
+	});
+    document.getElementById("mycanvas").addEventListener("mouseup", function () {
+        mouseDown = false;
+    });
+    document.getElementById("mycanvas").addEventListener("mousemove", function () {
+        if (mouseDown) {
+            let clickedSquare = grid[Math.floor(mouseX / squareSize)][Math.floor(mouseY / squareSize)];
+            if (placedBlock) {
+                clickedSquare.blocked = true;
+            } else {
+                clickedSquare.blocked = false;
+            }
+            clickedSquare.draw();
+        }
+    });
+
+    document.getElementById("reset").addEventListener("click", function () {
+        for (let x = 0; x<30; x++) for (let y = 0; y<30; y++) {
+            let square = grid[x][y];
+            square.visited = false;
+            square.prevNode = null;
+            square.adjacentNodes = [];
+            console.log(square)
+            square.draw();
+        }
+        drawStartAndEndNodes();
+        ran = false;
+	});
+    document.getElementById("clear").addEventListener("click", function () {
+        startNode = grid[0][0];
+	    endNode = grid[29][29];
+
+        for (let x = 0; x<30; x++) for (let y = 0; y<30; y++) {
+            let square = grid[x][y];
+            square.visited = false;
+            square.prevNode = null;
+            square.adjacentNodes = [];
+            square.blocked = false;
+            console.log(square);
+            square.draw();
+        }
+        drawStartAndEndNodes();
+        ran = false;
+	});
 }}; //sketchProc
 
 
